@@ -1,0 +1,12 @@
+
+/* Click-to-enlarge images. The full source file is used, never a thumbnail. */
+(()=>{const selector='.photo-gallery img, .letter-preview img, .case-content img, .case-aside img, .info-panel img, .split img, .gallery img, .media-grid img, .hero-visual img, .hero-art img';
+const imgs=[...document.querySelectorAll(selector)].filter(img=>!img.closest('a[href]')&&!img.closest('header,footer')&&!img.classList.contains('no-lightbox'));
+if(!imgs.length)return;const overlay=document.createElement('div');overlay.className='startup-lightbox';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Просмотр изображения');
+overlay.innerHTML='<button class="lb-close" type="button" aria-label="Закрыть">×</button><img alt=""><div class="lb-caption"></div><div class="lb-controls"><button type="button" class="lb-prev">← Предыдущее</button><button type="button" class="lb-next">Следующее →</button></div>';document.body.appendChild(overlay);
+const big=overlay.querySelector('img'),caption=overlay.querySelector('.lb-caption');let current=0,lastFocus=null;
+function show(i){current=(i+imgs.length)%imgs.length;const src=imgs[current].getAttribute('data-fullsrc')||imgs[current].currentSrc||imgs[current].src;big.src=src;big.alt=imgs[current].alt||'Изображение проекта';caption.textContent=big.alt;overlay.querySelector('.lb-controls').style.display=imgs.length>1?'flex':'none'}
+function open(i){lastFocus=document.activeElement;show(i);overlay.classList.add('open');document.body.style.overflow='hidden';overlay.querySelector('.lb-close').focus()}
+function close(){overlay.classList.remove('open');document.body.style.overflow='';big.removeAttribute('src');lastFocus?.focus?.()}
+imgs.forEach((img,i)=>{img.dataset.lightbox='';img.setAttribute('tabindex','0');img.setAttribute('role','button');img.setAttribute('aria-label','Увеличить: '+(img.alt||'изображение'));img.addEventListener('click',()=>open(i));img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(i)}})});
+overlay.querySelector('.lb-close').addEventListener('click',close);overlay.querySelector('.lb-prev').addEventListener('click',()=>show(current-1));overlay.querySelector('.lb-next').addEventListener('click',()=>show(current+1));overlay.addEventListener('click',e=>{if(e.target===overlay)close()});document.addEventListener('keydown',e=>{if(!overlay.classList.contains('open'))return;if(e.key==='Escape')close();if(e.key==='ArrowRight')show(current+1);if(e.key==='ArrowLeft')show(current-1)})})();
